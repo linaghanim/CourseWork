@@ -1,0 +1,181 @@
+; this is the code for problem set -- Lunar Lander
+
+(#%require (only racket/base random))
+
+;updated #1 #10
+(define (update ship-state fuel-burn-rate)
+ (if (> fuel-burn-rate (/ (fuel ship-state) dt))
+     (update ship-state (/ (fuel ship-state) dt))
+     (if (< 1 fuel-burn-rate)
+         (update ship-state 1)
+  (make-ship-state
+   (+ (height ship-state) (* (velocity ship-state) dt)) ; height
+   (+ (velocity ship-state)
+      (* (- (* engine-strength fuel-burn-rate) gravity)
+         dt))                                           ; velocity
+   (- (fuel ship-state) (* fuel-burn-rate dt))))        ; fuel
+  ))
+
+;updated #2
+(define (lander-loop ship-state strategy)
+  (show-ship-state ship-state)
+  (if (landed? ship-state)
+      (end-game ship-state)
+      (lander-loop (update ship-state (strategy ship-state)) strategy)))
+
+(define (show-ship-state ship-state)
+  (write-line 
+    (list 'height (height ship-state)
+          'velocity (velocity ship-state)
+          'fuel (fuel ship-state))))
+
+(define (landed? ship-state)
+  (<= (height ship-state) 0))
+
+(define (end-game ship-state)
+  (let ((final-velocity (velocity ship-state)))
+       (write-line final-velocity)
+       (cond ((>= final-velocity safe-velocity)
+               (write-line "good landing")
+               'game-over)
+             (else
+               (write-line "you crashed!")
+               'game-over))))
+
+(define (get-burn-rate)
+  (if (= (player-input) burn-key)
+      1
+      0))
+
+;updated #2
+(define (play strategy) (lander-loop (initial-ship-state) strategy))
+
+(define (initial-ship-state)
+  (make-ship-state 50       ; 50 km high
+                   0        ; not moving (0 km/sec)
+                   20))     ; 20 kg of fuel left
+
+
+(define (ask-user ship-state) (get-burn-rate))
+(define (full-burn ship-state) 1)
+(define (no-burn ship-state) 0)
+
+(define dt 1)               ; 1 second interval of simulation
+  
+(define gravity 0.5)        ; 0.5 km/sec/sec
+  
+(define safe-velocity -0.5) ; 0.5 km/sec or faster is a crash
+
+(define engine-strength 1)  ; 1 kilonewton-second
+
+(define (player-input) 
+  (char->integer (prompt-for-command-char " action: "))) 
+
+(define burn-key 32)   ;space key
+
+; You'll learn about the stuff below here in Chapter 2.
+; For now, think of make-ship-state, height, velocity, and fuel
+; as primitive procedures built in to Scheme.
+
+(define (make-ship-state height velocity fuel)
+  (list 'HEIGHT   height
+        'VELOCITY velocity
+        'FUEL     fuel))
+
+
+(define (height state) (second state))
+(define (velocity state) (fourth state))
+(define (fuel state) (sixth state))
+
+(define (second l) (cadr l))
+(define (fourth l) (cadr (cddr l)))
+(define (sixth l) (cadr (cddr (cddr l))))
+
+; Users of DrScheme or DrRacket: add these for compatibility with MIT Scheme...
+
+; for input and output
+
+(define (write-line x)
+  (display x)
+  (newline))
+
+(define (get-one-key)
+  (let ((x (read-char)))
+    (if (eq? x #\newline)
+        x
+        (empty-buffer x))))
+
+(define (empty-buffer x)
+  (if (eq? (read-char) #\newline)
+      x
+      (empty-buffer x)))
+
+(define (prompt-for-command-char prompt)
+  (display prompt)
+  (get-one-key)) 
+
+; for random number generation
+
+(#%require (only racket/base random))
+
+; a ridiculous addendum  (you'll need this for the exercises)
+
+(define (1+ x) (+ 1 x))
+
+;#3
+(define (random-choice str1 str2)
+  (lambda (ship-state)
+    (if (= (random 2) 0) (str1 ship-state) (str2 ship-state))))
+
+;#4
+(define (height-choice str1 str2 height1)
+  (lambda (ship-state)
+    (if (> height ship-state height1) (str1 ship-state) (str2 ship-state))))
+
+;#5
+(define (random-choice str1 str2)
+  (choice str1 str2 
+  (lambda (ship-state) (= (random 2) 0))))
+
+(define (choice str1 str2 predicate)
+  (lambda (ship-state) (if (predicate ship-state) (str1 ship-state) (str2 ship-state))))
+   
+(define (height-choice str1 str2 height1)
+  (choice str1 str2
+  (lambda (ship-state) (< height1 (height ship-state)))))
+
+;#6
+#|
+(play (height-choice no-burn (random-choice full-burn ask-user) 30))
+
+|#
+
+;#7
+#|
+if we plug in (-v0^2/2*h) in the equation then we get vf=0
+
+vf^2 = v0^2 + 2*(-v0^2/2*h)*h
+vf^2 = v0^2 - v0^2
+vf = 0
+
+|#
+
+;#8
+(define (constant-acc ship-state)
+  (/(+(/(* (velocity ship-state)(velocity ship-state)) (* 2 (height ship-state))) gravity) engine-strength))
+
+;#9
+;testing
+#|
+
+(height-choice no-burn constant-acc 20) --> fuel 16
+
+(height-choice no-burn constant-acc 30) --> fuel 11.16479585616114
+
+|#
+
+;#11
+(define (optimal-constant-acc ship-state)
+  (if (< (constant-acc ship-state) 0.815) (no-burn ship-state)
+      (constant-acc ship-state)))
+

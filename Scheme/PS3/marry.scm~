@@ -1,0 +1,175 @@
+;; This is the code for -- Stable Marriage
+
+(define (match-make proposers proposees)
+  (send proposers 'reset)
+  (send proposees 'reset)
+  (courtship proposers proposers proposees)
+  (zip-together (send proposers 'name)
+                (send (send proposers 'intended) 'name)))
+
+;Problem 1
+
+(define (courtship unengaged-proposers proposers proposees)
+  (if (null? unengaged-proposers) (let ((unengaged (currently-unengaged proposers))) (if (null? unengaged) proposers (courtship unengaged proposers proposees)))
+      (let ((result ((car unengaged-proposers) 'propose))) (if (equal? result 'we-are-engaged)
+                                                               (courtship (cdr unengaged-proposers) proposers proposees)
+                                                               (courtship (cdr unengaged-proposers) proposers proposees))
+  )))
+
+(define (currently-unengaged list-of-people)
+  (if (null? list-of-people) list-of-people 
+  (if (eq? ((car list-of-people) 'intended) '())
+      (cons (car list-of-people) (currently-unengaged (cdr list-of-people)))
+      (currently-unengaged (cdr list-of-people))))
+  )
+
+(define (send list-of-people message)
+  (if (null? list-of-people) list-of-people
+      (begin ((car list-of-people) message) (send (cdr list-of-people) message)))
+  )
+
+(define (couple? person1 person2)
+  (if (and (equal? (person1 'name) (person2 'intended)) (equal? (person2 'name) (person1 'intended))) t nil)
+  )
+
+(define (i-like-more? person1 person2)
+  (lambda (person)
+  (let ((pref (person 'loves))) (check person1 person2 pref))) 
+    )
+
+(define (check person1 person2 pref)
+  (cond ((null? pref) nil)
+        ((eq? (car pref) person1) person1)
+          ((eq? (car pref) person2) person2)
+          (else (check person1 person2 (cdr pref)))))
+
+
+
+(define (zip-together list1 list2)
+  (if (null? list1)
+      '()
+      (cons (list (car list1) (car list2))
+            (zip-together (cdr list1) (cdr list2)))))
+
+(define (filter pred lst)
+  (cond ((null? lst) '())
+        ((pred (car lst)) (cons (car lst) (filter pred (cdr lst))))
+        (else (filter pred (cdr lst)))))
+
+
+
+(define (make-person my-name)
+  (let ((preference-list '())
+        (possible-mates '())
+        (current-intended '()))
+    (define (me message)
+      (cond ((eq? message 'name) my-name)
+            ((eq? message 'intended) current-intended)
+            ((eq? message 'loves) preference-list)
+            ((eq? message 'possible) possible-mates)
+            ((eq? message 'reset)
+               (set! current-intended '())
+               ;(set! possible-mates preference-list)
+               'reset-done)
+            ((eq? message 'load-preferences)
+               (lambda (plist)
+                  (set! preference-list plist)
+                  (set! possible-mates plist)
+                  (set! current-intended '())
+                  'preferences-loaded))
+            ((eq? message 'propose)
+               (let ((beloved (car possible-mates)))
+                 (set! possible-mates (cdr possible-mates))
+                 (if (eq? ((beloved 'i-love-you) me)
+                          'i-love-you-too)
+                     (begin (set! current-intended beloved) (display (current-intended 'name)) (display " accepted ") (display (me 'name)) (display " -> ")
+                            'we-are-engaged)
+                     (begin (display (beloved 'name)) (display " rejected ") (display (me 'name)) (display " -> ") 'no-one-loves-me))))
+;Problem 2
+            ((eq? message 'i-love-you) ;if he's in her possible-mates list
+             (lambda (other)
+                  (cond ((eq? current-intended '()) (begin (set! current-intended other)'i-love-you-too))
+                        ((eq? ((i-like-more? current-intended other) me) other) (begin (display (me 'name)) (display " dumped ") (display (current-intended 'name)) (display " -> ") (current-intended 'reset) ((me 'i-changed-my-mind) current-intended) (set! current-intended other) 'i-love-you-too))
+                        (else 'buzz-off-creep))))
+            
+            ((eq? message 'i-changed-my-mind)
+               (lambda (lost-love)
+                  (cond ((eq? current-intended lost-love)
+                            (set! current-intended '())
+                            'dumped!)
+                        (else 
+                            'there-must-be-some-misunderstanding))))
+            (else 
+              (error "Bad message to a person " (list me my-name message)))))
+      me))
+
+
+;Problem 7
+
+;; This is a test file for -- Stable Marriage
+
+(define alan (make-person 'Alan))
+(define bob (make-person 'Bob))
+(define charles (make-person 'Chuck))
+(define david (make-person 'Dave))
+(define ernest (make-person 'Ernie))
+(define franklin (make-person 'Frank))
+(define agnes (make-person 'Agnes))
+(define bertha (make-person 'Bertha))
+(define carol (make-person 'Carol))
+(define deborah (make-person 'Debbie))
+(define ellen (make-person 'Ellen))
+(define francine (make-person 'Fran))
+
+((alan 'load-preferences) 
+   (list agnes carol francine bertha deborah ellen))
+((bob 'load-preferences) 
+   (list carol francine bertha deborah agnes ellen))
+((charles 'load-preferences) 
+   (list agnes francine carol deborah bertha ellen))
+((david 'load-preferences) 
+   (list francine ellen deborah agnes carol bertha))
+((ernest 'load-preferences) 
+   (list ellen carol francine agnes deborah bertha))
+((franklin 'load-preferences) 
+   (list ellen carol francine bertha agnes deborah))
+((agnes 'load-preferences) 
+   (list charles alan bob david ernest franklin))
+((bertha 'load-preferences) 
+   (list charles alan bob david ernest franklin))
+((carol 'load-preferences) 
+   (list franklin charles bob alan ernest david))
+((deborah 'load-preferences) 
+   (list bob alan charles franklin david ernest))
+((ellen 'load-preferences) 
+   (list franklin charles bob alan ernest david))
+((francine 'load-preferences) 
+   (list alan bob charles david franklin ernest))
+
+(define men1 (list alan bob charles david ernest franklin))
+(define women1 (list agnes bertha carol deborah ellen francine))
+
+;result: agnes accepted alan -> carol accepted bob -> agnes dumped alan -> agnes accepted chuck -> fran accepted dave -> ellen accepted ernie -> ellen dumped ernie -> ellen accepted frank -> carol rejected alan -> carol rejected ernie -> fran dumped dave -> fran accepted alan -> fran rejected ernie -> ellen rejected dave -> agnes rejected ernie -> debbie accepted dave -> debbie rejected ernie -> bertha accepted ernie -> ()
+
+
+(define bob (make-person 'Bob))
+(define carol (make-person 'Carol))
+(define ted (make-person 'Ted))
+(define alice (make-person 'Alice))
+((bob 'load-preferences) (list carol alice))
+((ted 'load-preferences) (list alice carol))
+((carol 'load-preferences) (list ted bob))
+((alice 'load-preferences) (list bob ted))
+(define men (list bob ted))
+(define women (list carol alice))
+
+#|
+(match-make men women) result: carol accepted bob -> alice accepted ted -> ()
+(match-make women men) result: ted accepted carol -> bob accepted alice -> ()
+
+Whoever proposes is favored, the group that proposes gets their a better choice than the other group. 
+|#
+
+
+;Problem 0
+;'because in the 1 proposal case we accept regardeless, and in the more than one we need to compare all of them

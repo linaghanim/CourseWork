@@ -1,0 +1,18 @@
+(define (double fn) (lambda (x) (fn (fn x))))
+
+(define (1+ x) (+ 1 x))
+
+;1.17
+(define (double x) (* x x))
+(define (halve x) (/ x 2))
+(define (isEven x) (= (modulo x 2) 0))
+
+(define (fast-expt a b)
+  (cond
+    ((= a 0) 0)
+    ((isEven a) (fast-expt halve a double b))
+    ((+ b (fast-expt (- a 1) b)))
+   ))
+
+
+

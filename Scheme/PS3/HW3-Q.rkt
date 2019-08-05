@@ -1,0 +1,36 @@
+;3.12
+(define (append1 x y)
+  (if (null? x)
+      y
+      (cons (car x) (append1 (cdr x) y))))
+
+(define (append2 x y)
+  (set-cdr! (last-pair x) y)
+  x)
+
+ (define (last-pair x)
+  (if (null? (cdr x))
+      x
+      (last-pair (cdr x))))
+
+(define x (list 'a 'b))
+(define y (list 'c 'd))
+;(define z (append1 x y))
+(define w (append2 x y))
+
+;3.14
+(define (mystery x)
+  (define (loop x y)
+    (if (null? x)
+        y
+        (let ((temp (cdr x)))
+          (set-cdr! x y)
+          (loop temp x))))
+(loop x '())) 
+
+;3.17
+(define (count-pairs x)
+  (let ((pairs '()))
+  (cond ((not (pair? x)) 0)
+        ((member x pairs) (count-pairs (car x)))
+        (else (begin (set! pairs (cons pairs x)) (+ (count-pairs (car x)) (count-pairs (cdr x)) 1))))))
