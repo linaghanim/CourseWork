@@ -1,0 +1,191 @@
+					;Lina Ghanim - HW1
+;cr
+;ce
+
+(defun permute (list)
+  (if list
+    (mapcan #'(lambda (x)
+		(mapcar #'(lambda (y) (cons x y))
+			(permute (remove x list :test #'equal))))
+	    list)
+    (list nil)))
+
+
+(defvar *nuts* '(
+		 (1 6 5 4 3 2)
+		 (1 6 4 2 5 3)
+		 (1 2 3 4 5 6)
+		 (1 6 2 4 5 3)
+		 (1 4 3 6 5 2)
+		 (1 4 6 2 3 5)
+		 (1 6 5 3 2 4)))
+
+
+(defun rrotate (l) (cons (car (last l))(butlast l)))
+(defun lrotate (l) (append (cdr l)(list (car l))))
+
+;put 1 in the beginning 
+(defun rotate1 (lst)
+  (if (= (car lst) 1) lst (rotate1 (lrotate lst))))
+
+;Question 1
+
+;generate a list of n+1 length
+(defun generate (n)
+  ;(defvar lst (getlist1 n));(1...n)
+  ;(defvar lst1 (permute lst))
+  ;(defvar lst2 (map rotate (lst1)))
+  ;(defvar lst3 remove-duplicates lst2 :test #'equal)
+
+  (pickrandomn (remove-duplicates (mapcar #'rotate1 (permute (getlist1 n))) :test #'equal) (+ 1 n) 0)
+ )
+
+;pick n+1 elements of the different permutations in lst ( n + #elements < length lst )
+(defun pickrandomn (lst n i)
+  (if (= n 0) nil
+    (cons (nth i lst) (pickrandomn lst (- n 1) (+ i 1)))
+   ))
+
+;generates a list of numbers 1 to n (1....n) 
+(defun getlist1 (n)
+  (if (= n 1) (list 1) (append (getlist1 (- n 1)) (list  n))))
+
+
+;----------------------------------------------
+;Question 2
+
+;creat all permutations 
+(defun solve (lst) ;return lst or nil
+  (
+   solve2 (permute lst)
+	  ))
+
+;check if exists a permutation that works
+(defun solve2 (lst)
+  (
+   if (null lst) nil
+	(let ((trylst (solve1 (car lst)))) (if (null trylst) (solve2 (cdr lst)) trylst))
+   ))
+
+;check a specific permutation works
+(defun solve1 (lst)
+  (if (null lst) nil 
+  (if (equal (works? (cdr lst) (car lst) (car (cdr lst))) t) lst nil
+		     )))
+
+(defun works? (lst mdl scnd) ;(send cdr mdl)
+  (
+   cond ((= (length lst) 0) nil)
+	((or (= (length lst) 1) (= (length mdl) 1)) (if (equal (car (last (rotateuntil (car mdl) (car lst)))) (cadr scnd)) t nil))
+        ((equal (matchQ (car mdl) (cadr mdl) (car lst) (cadr lst)) t) (works? (cdr lst) (cdr mdl) scnd))
+	))
+
+			        
+;--------------------------------------------
+;Question 3
+
+;DFS algorithm 
+(defun dfs (lst n) ;n=0
+   (if (= (length lst) n) nil ;no solution
+     (let ((newlst (dfs1 (car lst) 0 (cdr lst) (list (car lst)))))
+      (if (null newlst) (dfs (lrotate lst) (+ 1 n)) (if (= (car (cdr (car (cdr newlst)))) (car (last (car (last newlst))))) newlst (dfs (lrotate lst) (+ 1 n))))) ;change middle 
+   ))
+
+ (defun dfs1 (m n lst newlst);cdr m / newlst has m -works
+    (cond ((= (length m) n) nil)
+          ((= (length lst) 1)
+ 	  (if (= (car (last (car (last newlst)))) (car (cdr (rotateuntil (car (last m)) (car lst)))));check last nut with second nut
+ 	      (append newlst (list (rotateuntil (car (last m)) (car lst))))
+ 	    nil))
+ 	 ((equal (matchQ1 (car m) (car lst) (car (last newlst)) (= (length m) (length (car newlst)))) t)
+ 	  (let ((returned (dfs1 (cdr m) 0 (cdr lst) (append newlst (list (rotateuntil (car m) (car lst)))))))
+ 	   (if (null returned) (dfs1 m (+ 1 n) (lrotate lst) newlst) returned)))
+	(t (dfs1 m (+ 1 n) (lrotate lst) newlst))))
+
+; if second of p1 equal last of p2
+(defun matchQ1 (m p1 p2 co);(m is a number)
+  (cond ((equal co t) t)
+	((= (cadr (rotateuntil m p1)) (car (last p2))) t)
+	(t nil)))
+
+;another way					
+;check if p1-last of first = p2- second of second
+(defun matchQ (m1 m2 p1 p2)
+    (if (= (car (last (rotateuntil m1 p1))) (cadr (rotateuntil m2 p2))) t nil))
+
+; match to have first number in list equal to n (middle puzzle)
+(defun rotateuntil (n lst) 
+  (if (= (car lst) n) lst (rotateuntil n (lrotate lst))))
+
+
+;-----------------------------------------------
+;Question 4
+
+(defun cnt1 (lst n) 
+   (cond ((= (length lst) (+ n 1)) 0) ;tried all as middle
+	 (t (let ((newlst (dfs1 (car lst) 0 (cdr lst) (list (car lst)))))
+	      (if (null newlst) (cnt1 (lrotate lst) (+ 1 n))
+		(if (= (car (cdr (car (cdr newlst)))) (car (last (car (last newlst)))))
+		    (+ 1 (cnt1 (lrotate lst) (+ 1 n)))
+		  (cnt1 (lrotate lst) (+ 1 n)))
+		)
+	      )) ;change middle 
+	 ))
+
+
+;another way
+;; (defun cnt2 (lst n c)
+;;    (cond ((= (length lst) (+ n 1)) 0) ;tried all as middle
+;; 	 (t (let ((newlst (dfs1 (car lst) 0 (cdr lst) (list (car lst)))))
+;; 	      (if (null newlst) (cnt2 (lrotate lst) (+ 1 n) c)
+;; 		(if (= (car (cdr (car (cdr newlst)))) (car (last (car (last newlst)))))
+;; 		    (cnt2 (lrotate lst) (+ 1 n) (+ c 1))
+;; 		  (cnt2 (lrotate lst) (+ 1 n) c))
+;; 		)
+;; 	      )) ;change middle 
+;; 	 ))
+
+;-----------------------------------------------
+;Question 5
+
+(defun graph (c zero one more); 0 0 0 0
+   (if (= c 1000) (list zero one more)
+      (let ((solutions (cnt1 (generate  (+ (random 5) 4)) 0)))
+	(cond((= solutions 0) (graph (+ 1 c) (+ 1 zero) one more))
+	     ((= solutions 1) (graph (+ 1 c) zero (+ 1 one) more))
+	     (t (graph (+ 1 c) zero one (+ 1 more)))))
+      ))
+
+;puzzles >= 10 doesnt work
+
+
+
+;-----------------------------------------------
+;Question 6
+
+(defun main () 
+   (solve *nuts*)
+   ;(dfs *nuts* 0)
+   ;(cnt1 *nuts* 0)
+   ;(graph 0 0 0 0) ; takes time
+   )
+
+
+;my tests
+;; (defun otherways ()
+			        
+;;   (dfs1 '(1 6 5 4 3 2) 0 '((1 6 4 2 5 3) (1 2 3 4 5 6) (1 6 2 4 5 3) (1 4 3 6 5 2) (1 4 6 2 3 5) (1 6 5 3 2 4)) '((1 6 5 4 3 2)))
+;;   (dfs  '((1 6 5 4 3 2) (1 6 4 2 5 3) (1 2 3 4 5 6) (1 6 2 4 5 3) (1 4 3 6 5 2) (1 4 6 2 3 5) (1 6 5 3 2 4)) 0)
+  
+;;    (dfs '((1 2 3 4) (1 2 4 3) (1 4 2 3)) 0)
+;;    (cnt '((1 2 3 4) (1 2 4 3) (1 4 2 3)) 0)
+;;    (cnt1 '((1 2 3 4) (1 2 4 3) (1 4 2 3) (1 3 4 2) (1 3 2 4)) 0)
+   
+;;    (dfs1 '(1 2 3 4) 0 '((1 2 4 3) (1 4 2 3) (1 3 4 2) (1 3 2 4)) '((1 2 3 4)))
+;;    (dfs '((1 2 3 4) (1 2 4 3) (1 4 2 3) (1 3 4 2) (1 3 2 4)) 0)
+;;    (graph 4 0 0 0 0)
+;;    (dfs '((1 1 1) (1 1 1) (1 1 1)))
+;;    )
+
+;; (defvar *nnnn* '((1 4 6 2 3 5) (1 6 4 2 5 3) (4 3 2 1 6 5) (6 5 2 1 4 3) (2 3 4 5 6 1) (3 1 6 2 4 5) (5 5 2 4 1 6)))
+;; (defvar *squaresnn* '((1 2 3 4) (1 4 2 3) (1 3 4 2) (1 3 2 4) (1 2 4 3)))
