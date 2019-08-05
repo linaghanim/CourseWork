@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!--
+This is a simple example that shows how to create scenes with textured objects
+that cast shadows!
+-->
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>Real Quiz 2</title>
+		<style>
+			body { margin: 0;}
+			canvas { width: 100%; height: 100%;}
+		</style>
+	</head>
+	<body>
+    <p>
+      Quiz 2 (Mon 4/23) modify the quiz2.js file
+      to meet the following criteria from the initial view.
+      The default scene contains an avatar, a light blue cone, and a red ball.
+      You are to
+      <ul>
+        <li> Create a Physijs green cylinder of radius 2 and height 20
+          which is 30 units to the left of the yellow avatar </li>
+        <li> Create a Physijs green box of size 100x2x10
+          angled at a 45 degree angle and centered at (40,30,0)
+        </li>
+        <li> When the user presses the "p" key the red ball should
+          be teleported to just above the top of the green plank
+          where it will roll down the plank and hit the blue cylinder</li>
+        <li> When the ball hits the cylinder, the cone "jumps for joy"
+          by having its linear velocity set so that it goes straight up at
+          20 meters per second.</li>
+        <li> When the user presses the "r" key the cylinder and ball are
+          teleported to their original positions and orientations with
+          no linear or angular velocity</li>
+      </ul>
+    </p>
+		<script src="three.js"></script>
+    <script src="physi.js"></script>
+		<script src="quiz2.js"></script>
+		<div id="info"></div>
+
+	</body>
+</html>

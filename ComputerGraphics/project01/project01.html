@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<!--
+Lina Ghanim scene
+-->
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>project01</title>
+		<style>
+			body { margin: 0;}
+			canvas { width: 100%; height: 100%;}
+		</style>
+	</head>
+	<body>
+		<script src="three.js"></script>
+		<script>
+
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+//1) six or more different kinds of objects
+//1-cube 2) one geometry with at least three different sizes
+			var cubeGeometry = new THREE.BoxGeometry( 1, 10, 2 );
+			var cubeMaterial = new THREE.MeshLambertMaterial( { color: 00000000 } );
+			var cubeMesh = new THREE.Mesh( cubeGeometry, cubeMaterial );
+			cubeMesh.position.x = 0;
+			cubeMesh.position.y = 0;
+			cubeMesh.position.z = 0;
+			cubeMesh.castShadow = true;
+			cubeMesh.rotation.y = +5;
+			scene.add( cubeMesh );
+
+			var cubeGeometry1 = new THREE.BoxGeometry( 5, 6, 0);
+			var cubeMaterial1 = new THREE.MeshLambertMaterial( { color: 00000000 } );
+			 cubeMesh1 = new THREE.Mesh( cubeGeometry1, cubeMaterial1 );
+			cubeMesh1.position.x = -5;
+			cubeMesh1.position.y = -14;
+			cubeMesh1.position.z = 7;
+			cubeMesh1.castShadow = true;
+			scene.add( cubeMesh1 );
+
+			var cubeGeometry2 = new THREE.BoxGeometry( 3, 2, 0 );
+			var cubeMaterial2 = new THREE.MeshLambertMaterial( { color: 00000000 } );
+			var cubeMesh2 = new THREE.Mesh( cubeGeometry2, cubeMaterial2 );
+			cubeMesh2.position.x = 0;
+			cubeMesh2.position.y = -8;
+			cubeMesh2.position.z = 7;
+			cubeMesh2.castShadow = true;
+			scene.add( cubeMesh2 );
+
+//2-circle
+			var circleGeometry = new THREE.CircleGeometry( 1, 10 );
+			var circleMaterial = new THREE.MeshLambertMaterial( { color: 0xffff00 } );
+			circleMesh = new THREE.Mesh( circleGeometry, circleMaterial );
+			circleMesh.position.x = 0;
+			circleMesh.position.y = 15;
+			circleMesh.position.z = 0;
+			scene.add( circleMesh );
+
+//3-cone
+			var coneGeometry = new THREE.ConeGeometry( 3,5, 32 );
+			var coneMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000} );
+			coneMesh = new THREE.Mesh( coneGeometry, coneMaterial );
+			coneMesh.position.x = 0;
+			coneMesh.position.y = 6;
+			coneMesh.position.z = 0;
+			coneMesh.translateY(2);
+			coneMesh.castShadow = true;
+			scene.add( coneMesh );
+
+//4-box
+			var boxGeometry = new THREE.BoxGeometry( 20, 13, 10 );
+			var boxMaterial = new THREE.MeshLambertMaterial( {color: 0xC56010} );
+			boxMesh = new THREE.Mesh( boxGeometry, boxMaterial );
+			boxMesh.position.x = -5;
+			boxMesh.position.y = -11;
+			boxMesh.position.z = 0;
+			boxMesh.castShadow = true;
+			scene.add( boxMesh );
+
+//5-fence
+			var planegeometry = new THREE.PlaneBufferGeometry( 300, 5, 20 );
+			var planematerial = new THREE.MeshBasicMaterial( {color: 0x86592d, side: THREE.DoubleSide} );
+			var planeMesh = new THREE.Mesh( planegeometry, planematerial );
+			planeMesh.position.x = -5;
+			planeMesh.position.y = -14;
+			planeMesh.position.z = -15;
+			planeMesh.castShadow = true;
+			scene.add( planeMesh );
+
+//6-sphere
+			var sphereGeometry = new THREE.SphereGeometry( 5, 100, 100 );
+			var sphereMaterial = new THREE.MeshLambertMaterial( {color: 0xFFFFFF} );
+			sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial );
+			sphereMesh.position.x = -55;
+			sphereMesh.position.y = 20;
+			sphereMesh.position.z = -49;
+			scene.add( sphereMesh );
+
+			var sphereGeometry2 = new THREE.SphereGeometry( 6, 500, 500 );
+			var sphereMaterial2 = new THREE.MeshLambertMaterial( {color: 0xFFF500} );
+			sphereMesh2 = new THREE.Mesh( sphereGeometry2, sphereMaterial2 );
+			sphereMesh2.position.x = 55;
+			sphereMesh2.position.y = 20;
+			sphereMesh2.position.z = -50;
+			scene.add( sphereMesh2 );
+
+//plane 4) at least two textured planes
+			var planeGeometry = new THREE.PlaneGeometry( 400, 300, 32 );
+			var texture = new THREE.TextureLoader().load( 'grass.gif' );
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.set( 4, 4 );
+			var planeMaterial = new THREE.MeshLambertMaterial( { color: 0xFFFFFF,  map: texture ,side:THREE.DoubleSide} );
+			planeMesh = new THREE.Mesh( planeGeometry, planeMaterial );
+			//planeMesh.position.x = 0;
+			planeMesh.position.y = 3.5;
+			//planeMesh.position.z = 0;
+			//planeMesh.rotation.x = Math.PI/2;
+			planeMesh.rotateX(-Math.PI/2);
+			planeMesh.translateZ(-20);
+			planeMesh.receiveShadow = true;
+			scene.add(planeMesh);
+
+			var planeGeometry2 = new THREE.PlaneGeometry( 400, 300, 32 );
+			var texture2 = new THREE.TextureLoader().load('sky.gif' );
+			var planeMaterial2 = new THREE.MeshLambertMaterial( { color: 0xFFFFFF,  map: texture2 ,side:THREE.DoubleSide} );
+			//var planeMaterial2 = new THREE.MeshLambertMaterial( { color: 0xffccaa} );
+			planeMesh2 = new THREE.Mesh( planeGeometry2, planeMaterial2 );
+			planeMesh2.position.x = 0;
+			planeMesh2.position.y = 0;
+			planeMesh2.position.z = -50;
+			//planeMesh2.receiveShadow = true;
+			scene.add(planeMesh2);
+
+//light 3) at least 3 lights that cast shadows
+		  var light0 = new THREE.AmbientLight(0xffffff,0.0001);
+		  scene.add(light0);
+
+			var light1 = new THREE.PointLight( 0xFFFFFF );
+			light1.position.set( 55, 20, -10 );
+			light1.castShadow = true;
+			//Set up shadow properties for the light
+			light1.shadow.mapSize.width = 1024;  // default
+			light1.shadow.mapSize.height = 1024; // default
+			light1.shadow.camera.near = 0.5;       // default
+			light1.shadow.camera.far = 500      // default
+			scene.add( light1 );
+
+			var light2 = new THREE.PointLight( 0xffaaaa );
+			light2.position.set( 40, 20, -30 );
+			light2.castShadow = true;
+			//Set up shadow properties for the light
+			light2.shadow.mapSize.width = 1024;  // default
+			light2.shadow.mapSize.height = 1024; // default
+			light2.shadow.camera.near = 0.5;       // default
+			light2.shadow.camera.far = 500      // default
+			// add it to the scene
+			scene.add( light2 );
+
+			var light3 = new THREE.PointLight( 0xFFFFFF );
+			light3.position.set( 40, 20, 20 );
+			//Set up shadow properties for the light
+			light3.shadow.mapSize.width = 1024;  // default
+			light3.shadow.mapSize.height = 1024; // default
+			light3.shadow.camera.near = 0.5;       // default
+			light3.shadow.camera.far = 500      // default
+			scene.add( light3 );
+
+			var light4 = new THREE.PointLight( 0xFFFFFF );
+			light4.position.set( 40, 20, -10 );
+			light4.castShadow = true;
+			//Set up shadow properties for the light
+			light4.shadow.mapSize.width = 1024;  // default
+			light4.shadow.mapSize.height = 1024; // default
+			light4.shadow.camera.near = 0.5;       // default
+			light4.shadow.camera.far = 500      // default
+			scene.add( light4 );
+
+//camera
+			//camera.position.x = 10;
+			camera.position.z = 65;
+			camera.position.y=10;
+			camera.lookAt(0,0,0);
+			var counter = 0;
+
+/*
+the following things must be animated:
+the position of one or more objects
+the rotation of one or more objects
+the position of one or more lights
+the position or rotation of the camera
+*/
+			function animate() {
+				requestAnimationFrame( animate );
+
+        var currentTime = (new Date()).getTime();
+
+				counter++;
+				circleMesh.position.y = (counter%300)/8;
+
+				sphereMesh.rotateY(0.1);
+				sphereMesh.rotateX(0.1);
+				sphereMesh.rotateZ(0.1);
+
+        cubeMesh.rotateY(0.1);
+
+				var timer = new Date().getTime() * 0.0005;
+			 	camera.position.x = Math.floor(Math.cos( timer ) * 20);
+				light1.position.y=Math.floor(Math.cos( timer ) * 30);
+				light2.position.y=Math.floor(Math.cos( timer ) * 30);
+				light4.position.y=Math.floor(Math.cos( timer ) * 30);
+
+				sphereMesh.position.y=-Math.floor(Math.cos( timer ) * 30);
+				sphereMesh2.position.y=Math.floor(Math.cos( timer ) * 30);
+
+        counter = currentTime;
+				//counter++;
+				//planeMesh.position.y = -10+1*Math.sin(counter*0.01);
+        var p = 10*(1+Math.sin(counter*2*Math.PI/3600))/2
+        //camera.rotation.z = p*0.1;
+
+				renderer.render( scene, camera );
+			}
+			animate();
+		</script>
+	</body>
+</html>
